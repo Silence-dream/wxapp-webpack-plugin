@@ -1,108 +1,65 @@
-# wxapp-webpack-plugin
+# wxapp-boilerplate 🗜🖖
+微信小程序开发脚手架 (ES6, Redux, Immutable-js, Async/await, Promise, Reselect, Babel, ESLint, Stylelint, Gulp ... )
 
-[![Build Status](https://travis-ci.org/Cap32/wxapp-webpack-plugin.svg?branch=master)](https://travis-ci.org/Cap32/wxapp-webpack-plugin) [![Build status](https://ci.appveyor.com/api/projects/status/7scpj8g00a4cacpr/branch/master?svg=true)](https://ci.appveyor.com/project/Cap32/wxapp-webpack-plugin/branch/master)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
+支持[Yarn](https://yarnpkg.com/)，所以npm的命令可以使用yarn的相关命令替换
 
+## 安装
+首先需要有 [Node.js](https://nodejs.org) 环境.
+````javascript
+$ git clone https://github.com/ihahoo/wxapp-boilerplate.git
+$ npm install
+````
 
-微信小程序 webpack 插件
+## 启动开发环境
+````javascript
+$ npm run dev
+````
+注：会自动监视 `src/` 文件夹，有代码变动会自动生成到 `dist/` 文件夹。请将微信的开发者工具的项目目录设置为 `dist/` 文件夹，就会自动刷新调试界面。
 
+> 如果在开发中，发现没有及时更新，可尝试停止并重新运行此命令，或者尝试在微信开发者工具中刷新一下。
 
-###### 为什么要使用 webpack
+## 构建发布用的文件
+````javascript
+$ npm run build
+````
+会使用 `uglify` 对js代码压缩，也会调用不同的压缩工具对wxss, wxml, json 和图片进行压缩。
 
-很多前端开发者都使用过 [webpack](https://webpack.js.org/)，通过 webpack 开发 JavaScript 项目可以带来很多好处
+## 微信开发者工具新建项目
+请将 `项目目录` 设置到你项目所在目录的 `dist/` 目录下。因为最终构建的目标代码会发布到这里，如果还没有 `dist/` 这个文件夹，你可以手动创建或者运行 `npm run dev` 后自动创建。
 
-- 支持通过 `yarn` 或 `npm` 引入和使用 `node_modules` 模块
-- 支持丰富且灵活的 `loaders` 和 `plugins`
-- 支持 `alias`
-- 还有很多...
+## 说明
+### 开发方式
+使用你喜欢的编辑器编写代码 <=> 微信官方的开发者工具预览调试和发布
 
+### 注意
+请在微信官方的开发者工具的 `项目` 下将 `开启ES6转ES5` 设置为关闭，这里使用 `Gulp` 和 `Babel` 进行转换。在开发目录 `src/` 可使用 `.xml` 替代 `.wxml`，`.css` 替代 `.wxss`，会通过构建工具自动转换到目标文件夹 `dist/` 中。(主要为了编辑器对扩展名的识别，方便开发使用)
 
-###### 为什么要使用这个插件
+### 目录结构
+- `src/` 开发目录
+- `src/lib` 引用的模块库目录，由于微信小程序不支持 `node_modules` 使用npm安装的库无法直接使用，这里放置了转换后的库。以下是整合的一些库，当然你可以根据自己喜欢重新整合。
+- `src/lib/redux-act-reducer/` [redux-act-reducer](https://github.com/hahoocn/redux-act-reducer) 是本人开发的创建redux action和reducer的工具。
+- `src/lib/regenerator-runtime/` 使用async/await用到的库
+- `src/lib/wx-app-redux/` 本人开发的类似于 [react-redux](https://github.com/reactjs/react-redux) 的Redux数据绑定工具。将`Page()` 下的 `data` 与redux绑定。
+- `src/lib/immutable.js` 从官方[immutable-js](http://facebook.github.io/immutable-js/)生成的文件。
+- `src/lib/redux-immutable.js` 为了支持immutable，替换了redux下的 `combineReducers`
+- `src/lib/redux-thunk.js` 支持redux的异步通信
+- `src/lib/redux.js` 从官方[redux](https://github.com/reactjs/redux)生成的可直接调用的库。
+- `reselect.js` [Reselect](https://github.com/reactjs/reselect) 是为了提高性能而用到的redux state选择工具。
+- `src/pages/` 微信小程序的页面
+- `src/utils/request.js` 对 `wx.request` 的一个封装，返回 `Promise` ，所以方便使用 `async/await` 方式调用，为了让一套request代码，可以方便的用到各个端(比如web，服务器渲染，或者app)，所以抽象了一个封装，这样可以方便代码的重用，当然你可以根据自己需要选择不使用或者自行封装。具体使用参数请看这里：https://github.com/hahoocn/hahoorequest#usage
+- `dist/` 将 `src/` 下的文件通过 `Gulp` 构建工具转化生成的可让微信小程序运行环境解读的目标文件。
 
-- 微信小程序开发需要有多个入口文件（如 `app.js`, `app.json`, `pages/index/index.js` 等等），使用这个插件只需要引入 `app.js` 即可，其余文件将会被自动引入
-- 若多个入口文件（如 `pages/index/index.js` 和 `pages/logs/logs.js`）引入有相同的模块，这个插件能避免重复打包相同模块
-- 支持自动复制 `app.json` 上的 `tabbar` 图片 (v0.17.0 或以上)
+### 支持的语法
+支持 `ES6` 相关语法，支持 `Promise`，支持 `async/await`，支持 `import` 和 `export`
 
-
-## 使用方法
-
-#### 安装
-
-```bash
-yarn add -D wxapp-webpack-plugin
+### async/await 使用注意
+请在使用了 `async/await` 的页面顶部加入以下代码：
+```javascript
+import regeneratorRuntime from '../../lib/regenerator-runtime/runtime-module';
 ```
 
-#### 配置 webpack
+### 关于代码规范的统一
+使用 `eslint` 、 `stylelint` 和 `editorconfig` 可以对编码进行规范，特别是多人合作情况下，使用统一规范很重要。所以请将代码编辑器增加对`eslint` 、 `stylelint` 和 `editorconfig` 的插件和支持，在编码的同时，即可提示错误和警示。可以通过 `.eslintrc` 配置js规范的规则，通过`.stylelintrc` 配置样式表的规范规则，通过 `.editorconfig` 配置编辑器编码的一些规则。
 
-1. 在 `entry` 上引入 `{ app: './src/app.js' }`, 这里的 `./src/app.js` 为微信小程序开发所需的 `app.js`。**注意** `key` 必须为 `app`，`value` 支持[数组](https://webpack.js.org/configuration/entry-context/#entry)）
-
-2. 在 `output` 上设置 `filename: '[name].js'。` **注意** 这里 `[name].js` 是因为 `webpack` 将会打包生成多个文件，文件名称将以 `[name]` 规则来输出
-
-3. 添加 `new WXAppWebpackPlugin()` 到 `plugins`
-
-###### `loader` 的使用提示
-
-为了使 `webpack` 能编译和输出非 `.js` 文件，配置时要按需添加各种 `loaders`。这里作者推荐使用以下几个对微信小程序开发很有用的 `loaders`：
-
-- [file-loader](https://github.com/webpack-contrib/file-loader): 用于输出 `*.json`，`*.wxss`，`*.jpg` 之类的文件
-- [css-loader](https://github.com/webpack-contrib/css-loader): 使 `webpack` 能编译或处理 `*.wxss` 上引用的文件
-- [wxml-loader](https://github.com/Cap32/wxml-loader): 使 `webpack` 能编译或处理 `*.wxml` 上引用的文件
-
-开发者也可以根据自身需求和习惯，使用 `sass-loader` 之类的 `loader`。
-
-
-**完整的项目开发脚手架，请查看 [wxapp-boilerplate](https://github.com/cantonjs/wxapp-boilerplate)**
-
-
-## API
-
-#### WXAppWebpackPlugin
-
-###### 用法
-
-webpack.config.babel.js
-
-```js
-import WXAppWebpackPlugin from 'wxapp-webpack-plugin';
-export default {
-  // ...configs,
-  plugins: [
-    // ...other,
-    new WXAppWebpackPlugin(options)
-  ],
-};
-```
-
-
-###### Options
-
-所有 `Options` 均为可选
-
-- `clear` (\<Boolean\>): 在启动 `webpack` 时清空 `dist` 目录。默认为 `true`
-- `commonModuleName` (\<String\>): 公共 `js` 文件名。默认为 `common.js`
-- `extensions` (\<Array\<String\>\>): 脚本文件后缀名。默认为 `['.js']`
-
-#### `Targets`
-
-Webpack target 值，目前有 `Targets.Wechat` 和 `Targets.Alipay`，如果不配置，webpack target 将会自动设为 `Targets.Wechat`。如果需要开发支付宝小程序，则改为 `Targets.Alipay`。开发者也可以通过 `process.env.TARGET` 之类的配置来动态输出。
-
-###### 示例
-
-webpack.config.babel.js
-
-```js
-import WXAppWebpackPlugin, { Targets } from 'wxapp-webpack-plugin';
-export default {
-  // ...configs,
-  target: Targets[process.env.TARGET || 'Wechat'],
-};
-```
-
-## 提示
-
-- 程序的开发方式与 [微信小程序开发文档](https://mp.weixin.qq.com/debug/wxadoc/dev/) 一样，开发者需要在 `src` （源）目录创建 `app.js`、`app.json`、`app.wxss`、`pages/index/index.js` 之类的文件进行开发
-
-
-## License
-
-MIT © Cap32
+### 关于Redux、Immutable-js等相关工具
+`Redux` 做为管理数据流的工具，可以用到各种前端框架中。比如`React`，`Vue`，`React Native`等，当然微信小程序也可使用。Redux和Immutable-js在初步使用的时候，会觉得有点麻烦或难理解，不过对于数据流的管理或构建复杂的项目会更好，性能也不错。其实这里与微信小程序框架结合的Redux相关技术栈和我使用React下的Redux相关技术栈是一样的，所以可以方便代码的重用。在构建h5应用，小程序，pc软件，app等都可以用上Redux、Immutable-js等相关技术栈。

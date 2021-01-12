@@ -1,4 +1,0 @@
-<view>
-  <view>'Index Component loaded.'</view>
-  <common-component></common-component>
-</view>
